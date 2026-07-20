@@ -1,6 +1,6 @@
 # Sheng Game Framework
 
-版本：`0.1.0`
+版本：`0.1.1`
 
 最低 Unity 版本：`2022.3`
 
@@ -27,12 +27,14 @@
 - Asset Bundle Browser 自动安装入口
 - UnityAgentBridge 项目诊断、测试、截图和构建命令
 - C# 配置类生成或同步 Excel，并使用 Luban 生成 JSON
+- GitHub 新版本每日检查和一键更新
 
 打开构建窗口：
 
 ```text
 Sheng Game Framework > Build > 多平台构建工具
 Sheng Game Framework > Data > Luban 配置工具
+Sheng Game Framework > Framework > 检查更新
 ```
 
 ## 最小示例

@@ -116,7 +116,10 @@ Sheng Game Framework
 Sheng Game Framework > Build > 多平台构建工具
 Sheng Game Framework > AssetBundles > Open Asset Bundle Browser
 Sheng Game Framework > Data > Luban 配置工具
+Sheng Game Framework > Framework > 检查更新
 ```
+
+通过 Git 安装的框架会每天检查一次 GitHub `main` 最新提交。自动检查可以在 `Sheng Game Framework > Framework > 每天自动检查` 中关闭，详细说明见[框架更新器](Framework_Updater.md)
 
 ## 运行时初始化
 
