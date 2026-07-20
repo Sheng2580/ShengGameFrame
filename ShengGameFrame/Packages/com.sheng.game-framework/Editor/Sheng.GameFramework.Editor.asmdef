@@ -1,0 +1,19 @@
+{
+  "name": "Sheng.GameFramework.Editor",
+  "rootNamespace": "Sheng.GameFramework.Editor",
+  "references": [
+    "Sheng.GameFramework.Runtime",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

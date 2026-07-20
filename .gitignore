@@ -14,6 +14,20 @@
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 *.log
+.DS_Store
+
+# Unity project is stored in a subdirectory of this repository.
+/ShengGameFrame/[Ll]ibrary/
+/ShengGameFrame/[Tt]emp/
+/ShengGameFrame/[Oo]bj/
+/ShengGameFrame/[Bb]uild/
+/ShengGameFrame/[Bb]uilds/
+/ShengGameFrame/[Ll]ogs/
+/ShengGameFrame/[Uu]ser[Ss]ettings/
+/ShengGameFrame/.idea/
+/ShengGameFrame/Assets/StreamingAssets/AssetBundles/
+/ShengGameFrame/Assets/StreamingAssets/AssetBundles.meta
+/ShengGameFrame/AgentArtifacts/
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
