@@ -146,6 +146,7 @@ AssetManager.Instance.InitializeAsync(success =>
 ## 下一步
 
 - 使用普通服务或 Unity 管理器：[单例模块](Singletons.md)
+- 使用类型安全的全局事件：[EventManager](EventManager.md)
 - 构建并加载资源：[AssetManager 模块](AssetManager.md)
 - 初始化并复用对象：[PoolManager 模块](PoolManager.md)
 - 打开第一个面板：[UI 模块](UI_System.md)

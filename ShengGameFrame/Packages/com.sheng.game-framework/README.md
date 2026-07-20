@@ -11,6 +11,7 @@
 | 命名空间 | 能力 |
 | --- | --- |
 | `Sheng.GameFramework.Core` | C#、场景和跨场景单例 |
+| `Sheng.GameFramework.Events` | GameEvent 和 0 到 5 参数的类型安全事件管理 |
 | `Sheng.GameFramework.Assets` | Asset/Bundle 加载、引用计数、缓存和卸载 |
 | `Sheng.GameFramework.Pooling` | 泛型对象池、GameObject 复用、容量和场景生命周期 |
 | `Sheng.GameFramework.UI` | uGUI 分层、面板、模态和安全区 |
@@ -78,6 +79,16 @@ PoolManager.Instance.InitializePool(bulletPool, bulletPrefab, 16, 64);
 
 PooledHandle bullet = PoolManager.Instance.Rent(bulletPool);
 bullet?.Dispose();
+```
+
+监听并触发事件：
+
+```csharp
+using Sheng.GameFramework.Events;
+
+GameEvent playerDied = new GameEvent("Player.Died");
+EventManager.Instance.AddEventListener(playerDied, OnPlayerDied);
+EventManager.Instance.EventTrigger(playerDied);
 ```
 
 状态机和行为树都由调用方显式传入时间：

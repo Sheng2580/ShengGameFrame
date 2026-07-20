@@ -4,7 +4,7 @@
 
 ## 当前自动化测试
 
-框架当前包含 58 项 EditMode 测试：
+框架当前包含 68 项 EditMode 测试：
 
 | 测试组 | 数量 | 覆盖内容 |
 | --- | ---: | --- |
@@ -13,6 +13,7 @@
 | `PoolManagerTests` | 13 | 预制体池、回调、容量、租用版本、删池、场景生命周期和 AssetManager 引用 |
 | `StateMachineTests` | 4 | 生命周期、强制切换、延迟请求、释放 |
 | `BehaviorTreeTests` | 4 | Sequence、优先级中断、Repeat、黑板类型保护 |
+| `EventManagerTests` | 10 | GameEvent、0 到 5 参数、签名保护、移除和清理 |
 | `AgentBridgeTests` | 4 | 命令目录、项目快照、验证报告、层级导出 |
 | `JsonManagerTests` | 7 | 序列化、存档、备份、路径安全、损坏数据和 StreamingAssets |
 | `LubanToolTests` | 10 | 类型扫描、Excel 同步、字段迁移、路径安全、数据校验和真实 Luban 生成 |
@@ -59,6 +60,7 @@ unity-agent-cli --project <Unity项目路径> \
 | UI | Resources 与 AB 面板、层级、遮罩、安全区、关闭缓存 |
 | StateMachine | 全部状态机测试，新增切换规则对应测试 |
 | BehaviorTree | 全部行为树测试，自定义节点的 Running 和 Abort 路径 |
+| EventManager | 0 到 5 参数、签名冲突、移除监听和全局清理 |
 | JsonManager | 序列化、原子覆盖、备份、路径边界和目标平台 StreamingAssets |
 | Luban Tool | 字段新增、改名、删除确认、真实 Luban 校验和 JSON 反序列化 |
 | Build Pipeline | 目标平台 AB；发布前实际构建对应完整包 |
@@ -92,6 +94,7 @@ unity-agent-cli --project <Unity项目路径> \
 | 平台支持变化 | 首页、入门文档和模块限制 |
 | UPM 依赖变化 | `package.json`、入门文档和包内说明 |
 | Agent 命令变化 | 命令目录、示例和测试 |
+| 事件签名、参数上限或清理规则变化 | `Docs/EventManager.md` 和事件测试 |
 | JSON 存档行为变化 | `Docs/JsonManager.md` 和数据兼容说明 |
 | Luban 特性、目录或生成行为变化 | `Docs/Luban_Tool.md`、入门文档和依赖说明 |
 | 新增未来规划 | 必须明确标记为尚未实现 |
@@ -123,7 +126,7 @@ git diff -- README.md Docs ShengGameFrame/Packages/com.sheng.game-framework/READ
 检查文档中的框架类型引用：
 
 ```bash
-rg "AssetManager|UIManager|StateMachine|BehaviorTree|FrameworkAgentCommands" README.md Docs
+rg "EventManager|AssetManager|UIManager|StateMachine|BehaviorTree|FrameworkAgentCommands" README.md Docs
 ```
 
 这些文本检查不能替代 Unity 编译和测试
