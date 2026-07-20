@@ -1,6 +1,6 @@
 # Sheng Game Framework
 
-版本：`0.1.1`
+版本：`0.2.0`
 
 最低 Unity 版本：`2022.3`
 
@@ -12,6 +12,7 @@
 | --- | --- |
 | `Sheng.GameFramework.Core` | C#、场景和跨场景单例 |
 | `Sheng.GameFramework.Events` | GameEvent 和 0 到 5 参数的类型安全事件管理 |
+| `Sheng.GameFramework.Timing` | 延迟、循环、暂停和场景生命周期计时器 |
 | `Sheng.GameFramework.Assets` | Asset/Bundle 加载、引用计数、缓存和卸载 |
 | `Sheng.GameFramework.Pooling` | 泛型对象池、GameObject 复用、容量和场景生命周期 |
 | `Sheng.GameFramework.UI` | uGUI 分层、面板、模态和安全区 |
@@ -86,6 +87,20 @@ using Sheng.GameFramework.Events;
 GameEvent playerDied = new GameEvent("Player.Died");
 EventManager.Instance.AddEventListener(playerDied, OnPlayerDied);
 EventManager.Instance.EventTrigger(playerDied);
+```
+
+延迟和循环执行：
+
+```csharp
+using Sheng.GameFramework.Timing;
+
+TimerManager.Instance.Delay(1f, () => Debug.Log("延迟完成"));
+
+TimerId timerId = TimerManager.Instance.Repeat(
+    0.5f,
+    () => Debug.Log("循环执行"));
+
+TimerManager.Instance.Cancel(timerId);
 ```
 
 状态机和行为树都由调用方显式传入时间：

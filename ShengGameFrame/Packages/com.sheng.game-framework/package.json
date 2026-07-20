@@ -1,6 +1,6 @@
 {
   "name": "com.sheng.game-framework",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "displayName": "Sheng Game Framework",
   "description": "Reusable runtime foundations for Sheng Unity projects.",
   "unity": "2022.3",

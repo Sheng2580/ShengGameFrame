@@ -4,7 +4,7 @@
 
 ## 当前自动化测试
 
-框架当前包含 77 项 EditMode 测试：
+框架当前包含 85 项 EditMode 测试：
 
 | 测试组 | 数量 | 覆盖内容 |
 | --- | ---: | --- |
@@ -18,6 +18,7 @@
 | `JsonManagerTests` | 7 | 序列化、存档、备份、路径安全、损坏数据和 StreamingAssets |
 | `LubanToolTests` | 11 | 类型扫描、Excel 同步、字段迁移、线程和路径安全、数据校验和真实 Luban 生成 |
 | `FrameworkUpdateTests` | 4 | Git 地址识别、提交解析、依赖替换和本地包保护 |
+| `TimerManagerTests` | 8 | 延迟、循环、自取消、暂停、时间类型、分组和追赶上限 |
 
 ## 在 Unity 中运行
 
@@ -62,6 +63,7 @@ unity-agent-cli --project <Unity项目路径> \
 | StateMachine | 全部状态机测试，新增切换规则对应测试 |
 | BehaviorTree | 全部行为树测试，自定义节点的 Running 和 Abort 路径 |
 | EventManager | 0 到 5 参数、签名冲突、移除监听和全局清理 |
+| TimerManager | 延迟、有限与无限循环、暂停恢复、场景清理和回调内修改 |
 | JsonManager | 序列化、原子覆盖、备份、路径边界和目标平台 StreamingAssets |
 | Luban Tool | 字段新增、改名、删除确认、真实 Luban 校验和 JSON 反序列化 |
 | Framework Updater | 官方 Git 依赖识别、提交比较、manifest 定向修改和失败保护 |
@@ -98,6 +100,7 @@ unity-agent-cli --project <Unity项目路径> \
 | Agent 命令变化 | 命令目录、示例和测试 |
 | 事件签名、参数上限或清理规则变化 | `Docs/EventManager.md` 和事件测试 |
 | JSON 存档行为变化 | `Docs/JsonManager.md` 和数据兼容说明 |
+| 计时精度、重复规则、时间类型或生命周期变化 | `Docs/TimerManager.md` 和计时器测试 |
 | Luban 特性、目录或生成行为变化 | `Docs/Luban_Tool.md`、入门文档和依赖说明 |
 | 更新检查地址、周期或安装行为变化 | `Docs/Framework_Updater.md`、入门文档和包内说明 |
 | 新增未来规划 | 必须明确标记为尚未实现 |
