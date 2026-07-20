@@ -331,4 +331,4 @@ AssetManagerDebugSnapshot snapshot =
 - 远程下载、版本对比、Hash 校验、断点续传和热更新尚未实现
 - 限流针对资源请求数量，不包含网络带宽和字节级 IO 预算
 - EditorDatabase 依赖正确的 AB 标签，同一 Bundle 内同名资源需要传 `Assets/...` 完整路径
-- 不自动管理对象池生命周期，对象池应持有或转移实例句柄
+- `PoolManager` 会为资源池持有一个预制体句柄，并在删池完成时释放，详见[对象池模块](PoolManager.md)

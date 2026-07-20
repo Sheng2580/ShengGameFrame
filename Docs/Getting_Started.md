@@ -117,16 +117,22 @@ Sheng Game Framework > AssetBundles > Open Asset Bundle Browser
 
 ## 运行时初始化
 
-`AssetManager` 和 `UIManager` 都是跨场景单例。首次访问 `Instance` 时会查找已有对象，找不到则自动创建，因此基础用法不要求在启动场景预放管理器
+`AssetManager`、`PoolManager` 和 `UIManager` 都是跨场景单例。首次访问 `Instance` 时会查找已有对象，找不到则自动创建，因此基础用法不要求在启动场景预放管理器
 
 ```csharp
 using Sheng.GameFramework.Assets;
+using Sheng.GameFramework.Pooling;
 using Sheng.GameFramework.UI;
 
 AssetManager.Instance.InitializeAsync(success =>
 {
     if (success)
     {
+        PoolManager.Instance.InitializePool(
+            PoolKey.FromName("Bullet"),
+            bulletPrefab,
+            initialCapacity: 16,
+            maxCapacity: 64);
         UIManager.Instance.OpenAsync<HomePanel>();
     }
 });
@@ -138,6 +144,7 @@ AssetManager.Instance.InitializeAsync(success =>
 
 - 使用普通服务或 Unity 管理器：[单例模块](Singletons.md)
 - 构建并加载资源：[AssetManager 模块](AssetManager.md)
+- 初始化并复用对象：[PoolManager 模块](PoolManager.md)
 - 打开第一个面板：[UI 模块](UI_System.md)
 - 编写角色状态：[状态机模块](StateMachine.md)
 - 编写 AI 决策：[行为树模块](BehaviorTree.md)

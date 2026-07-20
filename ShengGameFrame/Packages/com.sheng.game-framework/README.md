@@ -12,6 +12,7 @@
 | --- | --- |
 | `Sheng.GameFramework.Core` | C#、场景和跨场景单例 |
 | `Sheng.GameFramework.Assets` | Asset/Bundle 加载、引用计数、缓存和卸载 |
+| `Sheng.GameFramework.Pooling` | 泛型对象池、GameObject 复用、容量和场景生命周期 |
 | `Sheng.GameFramework.UI` | uGUI 分层、面板、模态和安全区 |
 | `Sheng.GameFramework.StateMachine` | 泛型状态机和外部逻辑帧驱动 |
 | `Sheng.GameFramework.BehaviorTree` | 行为树、构建器和类型安全黑板 |
@@ -61,6 +62,18 @@ AssetManager.Instance.LoadAssetAsync<UnityEngine.GameObject>(
 using Sheng.GameFramework.UI;
 
 UIManager.Instance.OpenAsync<HomePanel>();
+```
+
+初始化并使用对象池：
+
+```csharp
+using Sheng.GameFramework.Pooling;
+
+PoolKey bulletPool = PoolKey.FromName("Bullet");
+PoolManager.Instance.InitializePool(bulletPool, bulletPrefab, 16, 64);
+
+PooledHandle bullet = PoolManager.Instance.Rent(bulletPool);
+bullet?.Dispose();
 ```
 
 状态机和行为树都由调用方显式传入时间：

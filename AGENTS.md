@@ -22,6 +22,7 @@
 | 新增或删除模块 | 根 `README.md`、新增或删除对应 `Docs` 文档、包内 `README.md` |
 | 修改公开 API | 对应模块文档中的 API 和示例 |
 | 修改资源加载和卸载 | `Docs/AssetManager.md` 及相关调用示例 |
+| 修改对象池容量、生命周期或回收行为 | `Docs/PoolManager.md` 及相关调用示例 |
 | 修改默认值或运行行为 | 对应模块文档中的规则、限制和注意事项 |
 | 修改菜单或构建输出 | `Docs/Build_Pipeline.md` |
 | 修改 Agent 命令 | `Docs/UnityAgentBridge.md` |
