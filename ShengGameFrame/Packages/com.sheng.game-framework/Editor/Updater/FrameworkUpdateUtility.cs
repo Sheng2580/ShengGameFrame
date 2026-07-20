@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -24,8 +26,8 @@ namespace Sheng.GameFramework.Editor.Updater
     {
         public const string PackageName = "com.sheng.game-framework";
         public const string RepositoryName = "Sheng2580/ShengGameFrame";
-        public const string LatestCommitApi =
-            "https://api.github.com/repos/Sheng2580/ShengGameFrame/commits/main";
+        public const string LatestCommitFeed =
+            "https://github.com/Sheng2580/ShengGameFrame/commits/main.atom";
 
         private const string OfficialRepository =
             "github.com/Sheng2580/ShengGameFrame.git";
@@ -156,17 +158,29 @@ namespace Sheng.GameFramework.Editor.Updater
         }
 
         public static bool TryParseLatestRevision(
-            string responseJson,
+            string responseXml,
             out string revision,
             out string error)
         {
             revision = string.Empty;
             try
             {
-                revision = JObject.Parse(responseJson)["sha"]?.Value<string>()?.Trim();
+                XDocument feed = XDocument.Parse(responseXml);
+                XNamespace atom = "http://www.w3.org/2005/Atom";
+                XElement latestEntry = feed.Root?
+                    .Elements(atom + "entry")
+                    .FirstOrDefault();
+                string entryId = latestEntry?
+                    .Element(atom + "id")?
+                    .Value
+                    .Trim();
+                int separatorIndex = entryId?.LastIndexOf('/') ?? -1;
+                revision = separatorIndex >= 0
+                    ? entryId.Substring(separatorIndex + 1)
+                    : string.Empty;
                 if (!IsCommitRevision(revision))
                 {
-                    error = "GitHub 返回的提交号无效";
+                    error = "GitHub 提交订阅源返回的提交号无效";
                     revision = string.Empty;
                     return false;
                 }
@@ -176,7 +190,7 @@ namespace Sheng.GameFramework.Editor.Updater
             }
             catch (Exception exception)
             {
-                error = $"解析 GitHub 更新信息失败 {exception.Message}";
+                error = $"解析 GitHub 提交订阅源失败 {exception.Message}";
                 return false;
             }
         }

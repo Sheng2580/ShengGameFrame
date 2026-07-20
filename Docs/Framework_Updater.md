@@ -29,7 +29,9 @@ https://github.com/Sheng2580/ShengGameFrame.git?path=/ShengGameFrame/Packages/co
 
 ## 自动检查
 
-框架默认每天检查一次 GitHub `main` 最新提交
+框架默认每天通过公开 Atom 提交订阅源检查 GitHub `main` 最新提交
+
+订阅源不使用 GitHub REST API，因此不会消耗匿名 API 每小时 60 次的调用额度
 
 发现更新后会显示：
 
@@ -61,7 +63,7 @@ Sheng Game Framework > Framework > 检查更新
 1. 读取 `Packages/manifest.json`
 2. 确认框架来自官方 Git 仓库
 3. 从 `packages-lock.json` 读取当前实际提交
-4. 请求 GitHub `main` 最新提交
+4. 请求 GitHub `main` 的公开 Atom 提交订阅源
 5. 显示当前和最新提交供用户确认
 6. 只替换 `com.sheng.game-framework` 对应的提交号
 7. 调用 Package Manager 重新解析依赖
@@ -77,6 +79,7 @@ Sheng Game Framework > Framework > 检查更新
 ## 网络与失败处理
 
 - GitHub 请求超时为 15 秒
+- 更新检查不依赖 GitHub REST API 匿名调用额度
 - 自动检查失败只写入 Console 警告，不阻塞编辑器启动
 - 手动检查失败会显示原因
 - GitHub 返回非法提交号时不会修改项目

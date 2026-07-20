@@ -55,16 +55,35 @@ namespace Sheng.GameFramework.Tests
         }
 
         [Test]
-        public void LatestRevision_ParsesGitHubResponse()
+        public void LatestRevision_ParsesFirstAtomEntry()
         {
+            string response =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<feed xmlns=\"http://www.w3.org/2005/Atom\">"
+                + $"<entry><id>tag:github.com,2008:Grit::Commit/{LatestRevision}</id></entry>"
+                + $"<entry><id>tag:github.com,2008:Grit::Commit/{CurrentRevision}</id></entry>"
+                + "</feed>";
             bool success = FrameworkUpdateUtility.TryParseLatestRevision(
-                $"{{\"sha\":\"{LatestRevision}\"}}",
+                response,
                 out string revision,
                 out string error);
 
             Assert.IsTrue(success, error);
             Assert.AreEqual(LatestRevision, revision);
             Assert.AreEqual("1234567", FrameworkUpdateUtility.ShortRevision(revision));
+        }
+
+        [Test]
+        public void LatestRevision_RejectsAtomFeedWithoutCommit()
+        {
+            bool success = FrameworkUpdateUtility.TryParseLatestRevision(
+                "<feed xmlns=\"http://www.w3.org/2005/Atom\"></feed>",
+                out string revision,
+                out string error);
+
+            Assert.IsFalse(success);
+            Assert.IsEmpty(revision);
+            StringAssert.Contains("提交号无效", error);
         }
 
         [Test]

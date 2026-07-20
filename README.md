@@ -2,7 +2,7 @@
 
 Sheng Game Framework 是一个面向 Unity 项目的轻量基础框架，当前提供单例、事件管理、计时器、AssetBundle、对象池、UI、状态机、行为树、JSON 数据管理、Luban 配置、多平台构建以及 UnityAgentBridge 自动化能力
 
-> 当前版本：`0.2.0`
+> 当前版本：`0.2.1`
 >
 > Unity 版本：`2022.3.62f3c1`
 >

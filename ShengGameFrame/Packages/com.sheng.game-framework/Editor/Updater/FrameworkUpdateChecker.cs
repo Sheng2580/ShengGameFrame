@@ -117,10 +117,10 @@ namespace Sheng.GameFramework.Editor.Updater
                 DateTime.UtcNow.Ticks.ToString());
 
             _request = UnityWebRequest.Get(
-                FrameworkUpdateUtility.LatestCommitApi);
+                FrameworkUpdateUtility.LatestCommitFeed);
             _request.SetRequestHeader(
                 "Accept",
-                "application/vnd.github+json");
+                "application/atom+xml");
             _request.SetRequestHeader(
                 "User-Agent",
                 "Sheng-Game-Framework-Updater");
