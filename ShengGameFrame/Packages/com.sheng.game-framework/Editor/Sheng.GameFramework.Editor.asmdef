@@ -3,6 +3,7 @@
   "rootNamespace": "Sheng.GameFramework.Editor",
   "references": [
     "Sheng.GameFramework.Runtime",
+    "Unity.Newtonsoft.Json",
     "UnityEditor.TestRunner"
   ],
   "includePlatforms": [

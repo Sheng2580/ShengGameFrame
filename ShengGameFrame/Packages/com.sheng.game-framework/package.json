@@ -5,6 +5,7 @@
   "description": "Reusable runtime foundations for Sheng Unity projects.",
   "unity": "2022.3",
   "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
     "com.unity.ugui": "1.0.0",
     "com.unity.test-framework": "1.1.33",
     "com.unityagentbridge.server": "0.3.1"

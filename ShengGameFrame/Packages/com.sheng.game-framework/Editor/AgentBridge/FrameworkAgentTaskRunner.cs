@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,7 +16,7 @@ namespace Sheng.GameFramework.Editor.AgentBridge
             "Library/ShengGameFramework/Agent/task-state.json";
 
         private static AgentTaskState _state = LoadState();
-        private static Func<bool> _pendingAction;
+        private static Func<Task<bool>> _pendingAction;
 
         static FrameworkAgentTaskRunner()
         {
@@ -24,6 +25,22 @@ namespace Sheng.GameFramework.Editor.AgentBridge
         public static string Start(
             string taskName,
             Func<bool> action,
+            string outputPath = "")
+        {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            return StartAsync(
+                taskName,
+                () => Task.FromResult(action.Invoke()),
+                outputPath);
+        }
+
+        public static string StartAsync(
+            string taskName,
+            Func<Task<bool>> action,
             string outputPath = "")
         {
             if (_pendingAction != null
@@ -73,10 +90,10 @@ namespace Sheng.GameFramework.Editor.AgentBridge
             return FrameworkAgentJson.Serialize(_state);
         }
 
-        private static void ExecutePendingAction()
+        private static async void ExecutePendingAction()
         {
             EditorApplication.update -= ExecutePendingAction;
-            Func<bool> action = _pendingAction;
+            Func<Task<bool>> action = _pendingAction;
             _pendingAction = null;
             if (action == null)
             {
@@ -89,7 +106,7 @@ namespace Sheng.GameFramework.Editor.AgentBridge
 
             try
             {
-                bool succeeded = action.Invoke();
+                bool succeeded = await action.Invoke();
                 _state.status = succeeded ? "Succeeded" : "Failed";
                 _state.message = succeeded ? "任务执行成功" : "任务返回失败";
             }

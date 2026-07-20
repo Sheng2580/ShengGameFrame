@@ -14,6 +14,9 @@ namespace Sheng.GameFramework.Tests
             StringAssert.Contains("StartEditModeTests", json);
             StringAssert.Contains("StartEditorAssetBundleBuild", json);
             StringAssert.Contains("CaptureGameView", json);
+            StringAssert.Contains("GetLubanStatus", json);
+            StringAssert.Contains("StartLubanInstallation", json);
+            StringAssert.Contains("StartLubanJsonGeneration", json);
         }
 
         [Test]

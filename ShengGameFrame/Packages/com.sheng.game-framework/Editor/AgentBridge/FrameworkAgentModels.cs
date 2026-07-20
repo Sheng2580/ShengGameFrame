@@ -184,6 +184,31 @@ namespace Sheng.GameFramework.Editor.AgentBridge
     }
 
     [Serializable]
+    internal sealed class AgentLubanStatus
+    {
+        public bool ready;
+        public bool installed;
+        public bool dotnetAvailable;
+        public string lubanVersion;
+        public string lubanPath;
+        public string dotnetPath;
+        public string configRoot;
+        public string jsonOutputDirectory;
+        public int tableCount;
+        public int errorCount;
+        public string message;
+        public List<string> errors = new List<string>();
+    }
+
+    [Serializable]
+    internal sealed class AgentLubanValidation
+    {
+        public bool success;
+        public string message;
+        public List<string> errors = new List<string>();
+    }
+
+    [Serializable]
     internal sealed class AgentCommandCatalog
     {
         public List<AgentCommandDescriptor> commands = new List<AgentCommandDescriptor>();

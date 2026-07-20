@@ -2,7 +2,8 @@
   "name": "Sheng.GameFramework.Runtime",
   "rootNamespace": "Sheng.GameFramework",
   "references": [
-    "UnityEngine.UI"
+    "UnityEngine.UI",
+    "Unity.Newtonsoft.Json"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

@@ -7,8 +7,10 @@
 - Unity `2022.3` 或更高的兼容版本
 - uGUI `1.0.0`
 - Unity Test Framework `1.1.33`
+- Newtonsoft Json `3.2.1`
 - 需要构建 Android 或 Windows 时，Unity Hub 必须安装对应平台模块
 - 使用 UnityAgentBridge CLI 时需要 Node.js
+- 使用 Luban 编辑器工具时需要 .NET 8 或兼容的更高版本
 
 框架的 Runtime 代码可以进入 Player。构建窗口、自动化命令和测试工具只在 Unity Editor 中编译
 
@@ -113,6 +115,7 @@ Sheng Game Framework
 ```text
 Sheng Game Framework > Build > 多平台构建工具
 Sheng Game Framework > AssetBundles > Open Asset Bundle Browser
+Sheng Game Framework > Data > Luban 配置工具
 ```
 
 ## 运行时初始化
@@ -148,3 +151,5 @@ AssetManager.Instance.InitializeAsync(success =>
 - 打开第一个面板：[UI 模块](UI_System.md)
 - 编写角色状态：[状态机模块](StateMachine.md)
 - 编写 AI 决策：[行为树模块](BehaviorTree.md)
+- 保存玩家数据和读取配置：[JsonManager](JsonManager.md)
+- 从 C# 配置类生成 Excel 和 JSON：[Luban 配置工具](Luban_Tool.md)

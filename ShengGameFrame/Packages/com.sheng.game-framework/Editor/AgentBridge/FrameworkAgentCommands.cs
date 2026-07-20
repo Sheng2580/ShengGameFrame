@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using Sheng.GameFramework.Editor.Luban;
 using UnityEditor;
 
 namespace Sheng.GameFramework.Editor.AgentBridge
@@ -29,6 +31,11 @@ namespace Sheng.GameFramework.Editor.AgentBridge
             AddCommand(catalog, nameof(StartWindowsAssetBundleBuild), "启动 Windows AB 构建");
             AddCommand(catalog, nameof(StartAndroidPackageBuild), "启动 Android 完整包构建");
             AddCommand(catalog, nameof(StartWindowsPackageBuild), "启动 Windows 完整包构建");
+            AddCommand(catalog, nameof(GetLubanStatus), "读取 Luban 环境和配置类扫描状态");
+            AddCommand(catalog, nameof(StartLubanInstallation), "安装框架固定版本的 Luban");
+            AddCommand(catalog, nameof(ValidateLubanProject), "检查 C# 配置类和 Excel 表结构");
+            AddCommand(catalog, nameof(StartLubanValidation), "使用 Luban 校验全部配置表");
+            AddCommand(catalog, nameof(StartLubanJsonGeneration), "使用 Luban 生成配置 JSON");
             AddCommand(catalog, nameof(GetTaskStatus), "读取最近的构建任务状态");
             AddCommand(catalog, nameof(ResetTaskStatus), "重置已结束的构建任务状态");
             return FrameworkAgentJson.Serialize(catalog);
@@ -179,6 +186,79 @@ namespace Sheng.GameFramework.Editor.AgentBridge
                 GameBuildPipeline.GetPlayerOutputPath(GameBuildPipeline.WindowsTarget));
         }
 
+        public static string GetLubanStatus()
+        {
+            LubanToolSettings settings = LubanToolSettings.instance;
+            LubanEnvironmentStatus environment = LubanInstaller.GetStatus(settings);
+            LubanScanResult scan = LubanTableScanner.ScanProject();
+            AgentLubanStatus status = new AgentLubanStatus
+            {
+                ready = environment.IsReady && scan.Success && scan.Tables.Count > 0,
+                installed = environment.IsLubanInstalled,
+                dotnetAvailable = !string.IsNullOrEmpty(environment.DotnetPath),
+                lubanVersion = LubanInstaller.Version,
+                lubanPath = environment.LubanPath,
+                dotnetPath = environment.DotnetPath,
+                configRoot = settings.ConfigRootPath,
+                jsonOutputDirectory = settings.JsonOutputPath,
+                tableCount = scan.Tables.Count,
+                errorCount = scan.Errors.Count,
+                message = !string.IsNullOrEmpty(environment.ErrorMessage)
+                    ? environment.ErrorMessage
+                    : scan.Tables.Count == 0
+                        ? "没有找到带 LubanTable 特性的配置类"
+                        : "Luban 环境正常"
+            };
+            status.errors.AddRange(scan.Errors);
+            return FrameworkAgentJson.Serialize(status);
+        }
+
+        public static string ValidateLubanProject()
+        {
+            LubanOperationResult result = LubanProjectService.ValidateProjectStructure();
+            AgentLubanValidation validation = new AgentLubanValidation
+            {
+                success = result.Success,
+                message = result.Message
+            };
+            validation.errors.AddRange(result.Errors);
+            return FrameworkAgentJson.Serialize(validation);
+        }
+
+        public static string StartLubanInstallation()
+        {
+            return FrameworkAgentTaskRunner.StartAsync(
+                nameof(StartLubanInstallation),
+                async () =>
+                {
+                    LubanInstallResult result = await LubanInstaller.InstallAsync(
+                        LubanToolSettings.instance);
+                    if (!result.Success)
+                    {
+                        throw new InvalidOperationException(result.Message);
+                    }
+
+                    return true;
+                },
+                LubanToolSettings.instance.LubanInstallPath);
+        }
+
+        public static string StartLubanValidation()
+        {
+            return FrameworkAgentTaskRunner.StartAsync(
+                nameof(StartLubanValidation),
+                () => RunLubanOperation(LubanProjectService.ValidateWithLubanAsync),
+                LubanToolSettings.instance.TemporaryOutputPath);
+        }
+
+        public static string StartLubanJsonGeneration()
+        {
+            return FrameworkAgentTaskRunner.StartAsync(
+                nameof(StartLubanJsonGeneration),
+                () => RunLubanOperation(LubanProjectService.GenerateJsonAsync),
+                LubanToolSettings.instance.JsonOutputPath);
+        }
+
         public static string GetTaskStatus()
         {
             return FrameworkAgentTaskRunner.GetStatus();
@@ -199,6 +279,21 @@ namespace Sheng.GameFramework.Editor.AgentBridge
                 method = typeof(FrameworkAgentCommands).FullName + "." + method + "()",
                 description = description
             });
+        }
+
+        private static async Task<bool> RunLubanOperation(
+            Func<Task<LubanOperationResult>> operation)
+        {
+            LubanOperationResult result = await operation.Invoke();
+            if (result.Success)
+            {
+                return true;
+            }
+
+            string details = result.Errors.Count == 0
+                ? result.Message
+                : result.Message + "\n" + string.Join("\n", result.Errors);
+            throw new InvalidOperationException(details);
         }
     }
 }

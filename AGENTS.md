@@ -26,6 +26,8 @@
 | 修改默认值或运行行为 | 对应模块文档中的规则、限制和注意事项 |
 | 修改菜单或构建输出 | `Docs/Build_Pipeline.md` |
 | 修改 Agent 命令 | `Docs/UnityAgentBridge.md` |
+| 修改 JSON 存档、备份或读取规则 | `Docs/JsonManager.md` |
+| 修改 Luban 特性、目录、同步或生成规则 | `Docs/Luban_Tool.md` |
 | 修改依赖或最低 Unity 版本 | 根 `README.md`、`Docs/Getting_Started.md`、`package.json` |
 | 新增测试或改变验证方式 | `Docs/Testing_And_Maintenance.md` |
 
