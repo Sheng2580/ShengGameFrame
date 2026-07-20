@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Sheng.GameFramework.Config;
 using Sheng.GameFramework.Editor.Luban;
@@ -354,6 +356,45 @@ namespace Sheng.GameFramework.Tests
             {
                 settings.ConfigRoot = originalConfigRoot;
                 settings.JsonOutputDirectory = originalOutput;
+            }
+        }
+
+        [Test]
+        public void ToolWindow_BackgroundLogDoesNotCallUnityApi()
+        {
+            LubanToolWindow window =
+                ScriptableObject.CreateInstance<LubanToolWindow>();
+            try
+            {
+                MethodInfo appendLog = typeof(LubanToolWindow).GetMethod(
+                    "AppendLog",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.NotNull(appendLog);
+                Exception backgroundException = null;
+
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        appendLog.Invoke(window, new object[] { "后台日志" });
+                    }
+                    catch (TargetInvocationException exception)
+                    {
+                        backgroundException = exception.InnerException ?? exception;
+                    }
+                    catch (Exception exception)
+                    {
+                        backgroundException = exception;
+                    }
+                }).Wait();
+
+                Assert.IsNull(
+                    backgroundException,
+                    backgroundException?.ToString());
+            }
+            finally
+            {
+                Object.DestroyImmediate(window);
             }
         }
 

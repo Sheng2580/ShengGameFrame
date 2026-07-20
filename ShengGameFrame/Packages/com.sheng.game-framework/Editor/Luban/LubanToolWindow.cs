@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
@@ -21,7 +20,6 @@ namespace Sheng.GameFramework.Editor.Luban
         private Vector2 _tableScroll;
         private Vector2 _logScroll;
         private bool _isBusy;
-        private int _mainThreadId;
 
         [MenuItem("Sheng Game Framework/Data/Luban 配置工具")]
         public static void Open()
@@ -34,7 +32,6 @@ namespace Sheng.GameFramework.Editor.Luban
 
         private void OnEnable()
         {
-            _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             RefreshState();
         }
 
@@ -49,6 +46,14 @@ namespace Sheng.GameFramework.Editor.Luban
             DrawTables();
             EditorGUILayout.Space(6f);
             DrawLogs();
+        }
+
+        private void OnInspectorUpdate()
+        {
+            if (_isBusy)
+            {
+                Repaint();
+            }
         }
 
         private void DrawEnvironment()
@@ -265,10 +270,7 @@ namespace Sheng.GameFramework.Editor.Luban
         private async void InstallLuban()
         {
             _isBusy = true;
-            if (Thread.CurrentThread.ManagedThreadId == _mainThreadId)
-            {
-                Repaint();
-            }
+            Repaint();
             try
             {
                 LubanInstallResult result = await LubanInstaller.InstallAsync(
@@ -396,8 +398,6 @@ namespace Sheng.GameFramework.Editor.Luban
                     _logs.RemoveRange(0, _logs.Count - 300);
                 }
             }
-
-            Repaint();
         }
 
         private static void RevealDirectory(string path)

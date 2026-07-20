@@ -4,7 +4,7 @@
 
 ## 当前自动化测试
 
-框架当前包含 68 项 EditMode 测试：
+框架当前包含 69 项 EditMode 测试：
 
 | 测试组 | 数量 | 覆盖内容 |
 | --- | ---: | --- |
@@ -16,7 +16,7 @@
 | `EventManagerTests` | 10 | GameEvent、0 到 5 参数、签名保护、移除和清理 |
 | `AgentBridgeTests` | 4 | 命令目录、项目快照、验证报告、层级导出 |
 | `JsonManagerTests` | 7 | 序列化、存档、备份、路径安全、损坏数据和 StreamingAssets |
-| `LubanToolTests` | 10 | 类型扫描、Excel 同步、字段迁移、路径安全、数据校验和真实 Luban 生成 |
+| `LubanToolTests` | 11 | 类型扫描、Excel 同步、字段迁移、线程和路径安全、数据校验和真实 Luban 生成 |
 
 ## 在 Unity 中运行
 
