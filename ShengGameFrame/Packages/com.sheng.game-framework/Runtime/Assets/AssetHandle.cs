@@ -7,7 +7,7 @@ namespace Sheng.GameFramework.Assets
     /// <summary>
     /// 可释放的资源句柄
     /// </summary>
-    public interface IAssetHandle : IDisposable
+    internal interface IAssetHandle : IDisposable
     {
         Object AssetObject { get; }
         string BundleName { get; }
@@ -18,7 +18,7 @@ namespace Sheng.GameFramework.Assets
     /// <summary>
     /// 持有一次资源引用
     /// </summary>
-    public sealed class AssetHandle<T> : IAssetHandle where T : Object
+    internal sealed class AssetHandle<T> : IAssetHandle where T : Object
     {
         private AssetManager _owner;
         private string _entryKey;
@@ -63,7 +63,7 @@ namespace Sheng.GameFramework.Assets
     /// <summary>
     /// 同时管理实例和预制体资源引用
     /// </summary>
-    public sealed class AssetInstanceHandle : IDisposable
+    internal sealed class AssetInstanceHandle : IDisposable
     {
         private AssetHandle<GameObject> _prefabHandle;
 

@@ -37,28 +37,23 @@ Sheng Game Framework > Data > Luban 配置工具
 
 ## 最小示例
 
-异步加载 AB 资源：
+异步加载并实例化 AB 预制体：
 
 ```csharp
 using Sheng.GameFramework.Assets;
 
-AssetManager.Instance.LoadAssetAsync<UnityEngine.GameObject>(
+UnityEngine.GameObject playerInstance = null;
+
+AssetManager.Instance.InstantiateAsync(
     "characters",
     "Player",
-    handle =>
+    instance =>
     {
-        if (handle != null)
-        {
-            try
-            {
-                UnityEngine.Object.Instantiate(handle.Asset);
-            }
-            finally
-            {
-                handle.Dispose();
-            }
-        }
+        playerInstance = instance;
     });
+
+// 不再使用时销毁实例并释放资源引用
+AssetManager.Instance.ReleaseInstance(playerInstance);
 ```
 
 打开 UI 面板：

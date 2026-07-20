@@ -5,6 +5,7 @@ using Sheng.GameFramework.Assets;
 using Sheng.GameFramework.Editor;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
 
 namespace Sheng.GameFramework.Tests
@@ -13,6 +14,7 @@ namespace Sheng.GameFramework.Tests
     {
         private const string TestFolder = "Assets/ShengGameFrameworkTests";
         private const string TestAssetPath = TestFolder + "/ReferenceTexture.asset";
+        private const string TestPrefabPath = TestFolder + "/ReferencePrefab.prefab";
         private const string TestBundleName = "framework-tests/resources";
 
         private AssetManager _manager;
@@ -34,6 +36,13 @@ namespace Sheng.GameFramework.Tests
             AssetImporter importer = AssetImporter.GetAtPath(TestAssetPath);
             importer.SetAssetBundleNameAndVariant(TestBundleName, string.Empty);
             importer.SaveAndReimport();
+
+            GameObject prefabObject = new GameObject("ReferencePrefab");
+            PrefabUtility.SaveAsPrefabAsset(prefabObject, TestPrefabPath);
+            Object.DestroyImmediate(prefabObject);
+            AssetImporter prefabImporter = AssetImporter.GetAtPath(TestPrefabPath);
+            prefabImporter.SetAssetBundleNameAndVariant(TestBundleName, string.Empty);
+            prefabImporter.SaveAndReimport();
 
             _manager = AssetManager.Instance;
             _manager.Settings.LoadMode = AssetLoadMode.EditorDatabase;
@@ -62,38 +71,38 @@ namespace Sheng.GameFramework.Tests
         [Test]
         public void LoadAsset_ReusesAssetAndReleasesAtZeroReferences()
         {
-            AssetHandle<Texture2D> first = _manager.LoadAsset<Texture2D>(
+            Texture2D first = _manager.LoadAsset<Texture2D>(
                 TestBundleName,
                 "ReferenceTexture");
-            AssetHandle<Texture2D> second = _manager.LoadAsset<Texture2D>(
+            Texture2D second = _manager.LoadAsset<Texture2D>(
                 TestBundleName,
                 "ReferenceTexture");
 
             Assert.NotNull(first);
             Assert.NotNull(second);
-            Assert.AreSame(first.Asset, second.Asset);
+            Assert.AreSame(first, second);
             Assert.AreEqual(2, _manager.GetAssetReferenceCount<Texture2D>(
                 TestBundleName,
                 "ReferenceTexture"));
 
-            first.Dispose();
+            Assert.IsTrue(_manager.ReleaseAsset(first));
             Assert.AreEqual(1, _manager.GetAssetReferenceCount<Texture2D>(
                 TestBundleName,
                 "ReferenceTexture"));
 
-            second.Dispose();
+            Assert.IsTrue(_manager.ReleaseAsset(second));
             Assert.AreEqual(0, _manager.LoadedAssetCount);
         }
 
         [Test]
         public void KeepLoaded_RemainsCachedUntilExplicitCleanup()
         {
-            AssetHandle<Texture2D> handle = _manager.LoadAsset<Texture2D>(
+            Texture2D texture = _manager.LoadAsset<Texture2D>(
                 TestBundleName,
                 "ReferenceTexture",
                 AssetCachePolicy.KeepLoaded);
 
-            handle.Dispose();
+            _manager.ReleaseAsset(texture);
 
             Assert.AreEqual(1, _manager.LoadedAssetCount);
             Assert.AreEqual(1, _manager.ClearUnusedAssets(true));
@@ -157,18 +166,102 @@ namespace Sheng.GameFramework.Tests
             };
             _manager.Configure(settings, bundleRoot, platformName);
 
-            AssetHandle<Texture2D> handle = _manager.LoadAsset<Texture2D>(
+            Texture2D texture = _manager.LoadAsset<Texture2D>(
                 TestBundleName,
                 "ReferenceTexture");
 
-            Assert.NotNull(handle);
+            Assert.NotNull(texture);
             Assert.AreEqual(1, _manager.GetBundleReferenceCount(TestBundleName));
             Assert.IsTrue(_manager.IsBundleLoaded(TestBundleName));
 
-            handle.Dispose();
+            _manager.ReleaseAsset(texture);
 
             Assert.AreEqual(0, _manager.GetBundleReferenceCount(TestBundleName));
             Assert.IsFalse(_manager.IsBundleLoaded(TestBundleName));
+        }
+
+        [Test]
+        public void LoadAssetAsync_ReturnsAssetWithoutExposingHandle()
+        {
+            Texture2D loaded = null;
+            bool failed = false;
+
+            _manager.LoadAssetAsync<Texture2D>(
+                TestBundleName,
+                "ReferenceTexture",
+                asset => loaded = asset,
+                () => failed = true);
+
+            Assert.NotNull(loaded);
+            Assert.IsFalse(failed);
+            Assert.AreEqual(1, _manager.GetAssetReferenceCount<Texture2D>(
+                TestBundleName,
+                "ReferenceTexture"));
+            Assert.IsTrue(_manager.ReleaseAsset(loaded));
+        }
+
+        [Test]
+        public void LoadAssetAsync_WithoutGenericPreloadsGameObject()
+        {
+            bool completed = false;
+
+            _manager.LoadAssetAsync(
+                TestBundleName,
+                "ReferencePrefab",
+                () => completed = true);
+
+            Assert.IsTrue(completed);
+            Assert.AreEqual(1, _manager.GetAssetReferenceCount<GameObject>(
+                TestBundleName,
+                "ReferencePrefab"));
+            Assert.IsTrue(_manager.ReleaseAsset<GameObject>(
+                TestBundleName,
+                "ReferencePrefab"));
+        }
+
+        [Test]
+        public void LoadAssetAsync_OnFailureOnlyInvokesFailedCallback()
+        {
+            bool completed = false;
+            bool failed = false;
+
+            LogAssert.Expect(
+                LogType.Error,
+                $"[AssetManager] Editor 中找不到资源 {TestBundleName}/MissingTexture");
+            LogAssert.Expect(
+                LogType.Error,
+                $"[AssetManager] 加载失败 {TestBundleName}/MissingTexture 类型 Texture2D");
+
+            _manager.LoadAssetAsync<Texture2D>(
+                TestBundleName,
+                "MissingTexture",
+                asset => completed = true,
+                () => failed = true);
+
+            Assert.IsFalse(completed);
+            Assert.IsTrue(failed);
+        }
+
+        [Test]
+        public void InstantiateAsync_ReleaseInstanceReleasesPrefabReference()
+        {
+            GameObject instance = null;
+
+            _manager.InstantiateAsync(
+                TestBundleName,
+                "ReferencePrefab",
+                loadedInstance => instance = loadedInstance);
+
+            Assert.NotNull(instance);
+            Assert.AreEqual(1, _manager.GetAssetReferenceCount<GameObject>(
+                TestBundleName,
+                "ReferencePrefab"));
+
+            Assert.IsTrue(_manager.ReleaseInstance(instance));
+
+            Assert.AreEqual(0, _manager.GetAssetReferenceCount<GameObject>(
+                TestBundleName,
+                "ReferencePrefab"));
         }
     }
 }

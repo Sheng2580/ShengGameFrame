@@ -255,7 +255,7 @@ namespace Sheng.GameFramework.Pooling
             }
 
             _pendingInitializations.Add(key, newPending);
-            AssetManager.Instance.LoadAssetAsync<GameObject>(
+            AssetManager.Instance.LoadAssetHandleAsync<GameObject>(
                 normalizedBundleName,
                 normalizedAssetName,
                 handle => OnPrefabLoaded(newPending, handle));

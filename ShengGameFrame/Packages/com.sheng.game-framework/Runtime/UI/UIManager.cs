@@ -236,7 +236,7 @@ namespace Sheng.GameFramework.UI
                 return;
             }
 
-            AssetManager.Instance.LoadAssetAsync<GameObject>(
+            AssetManager.Instance.LoadAssetHandleAsync<GameObject>(
                 config.BundleName,
                 config.AssetName,
                 handle =>

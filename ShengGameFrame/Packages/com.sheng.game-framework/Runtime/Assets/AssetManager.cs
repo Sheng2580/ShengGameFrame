@@ -51,6 +51,10 @@ namespace Sheng.GameFramework.Assets
         private readonly Queue<PendingAssetLoad> _loadQueue = new Queue<PendingAssetLoad>();
         private readonly Dictionary<string, int> _bundleReferenceCounts =
             new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<int, List<IAssetHandle>> _ownedAssetHandles =
+            new Dictionary<int, List<IAssetHandle>>();
+        private readonly Dictionary<int, AssetInstanceHandle> _ownedInstanceHandles =
+            new Dictionary<int, AssetInstanceHandle>();
 
         private BundleLoader _bundleLoader;
         private int _activeLoadCount;
@@ -144,7 +148,240 @@ namespace Sheng.GameFramework.Assets
             _bundleLoader.InitializeAsync(completed);
         }
 
-        public AssetHandle<T> LoadAsset<T>(
+        public T LoadAsset<T>(
+            string bundleName,
+            string assetName,
+            AssetCachePolicy? cachePolicy = null)
+            where T : Object
+        {
+            AssetHandle<T> handle = LoadAssetHandle<T>(
+                bundleName,
+                assetName,
+                cachePolicy);
+            if (handle == null || handle.Asset == null)
+            {
+                handle?.Dispose();
+                LogLoadFailure(bundleName, assetName, typeof(T));
+                return null;
+            }
+
+            T asset = handle.Asset;
+            TrackAssetHandle(asset, handle);
+            return asset;
+        }
+
+        public void LoadAssetAsync<T>(
+            string bundleName,
+            string assetName,
+            Action<T> completed,
+            Action failed = null,
+            AssetCachePolicy? cachePolicy = null)
+            where T : Object
+        {
+            if (completed == null)
+            {
+                Debug.LogError("[AssetManager] 异步加载必须提供完成回调");
+                return;
+            }
+
+            LoadAssetHandleAsync<T>(
+                bundleName,
+                assetName,
+                handle =>
+                {
+                    if (handle == null || handle.Asset == null)
+                    {
+                        handle?.Dispose();
+                        LogLoadFailure(bundleName, assetName, typeof(T));
+                        InvokeSafely(failed);
+                        return;
+                    }
+
+                    T asset = handle.Asset;
+                    TrackAssetHandle(asset, handle);
+                    try
+                    {
+                        completed.Invoke(asset);
+                    }
+                    catch (Exception exception)
+                    {
+                        ReleaseTrackedAssetHandle(asset, handle);
+                        Debug.LogException(exception);
+                    }
+                },
+                cachePolicy);
+        }
+
+        public void LoadAssetAsync(
+            string bundleName,
+            string assetName,
+            Action completed,
+            Action failed = null,
+            AssetCachePolicy? cachePolicy = null)
+        {
+            LoadAssetAsync<GameObject>(
+                bundleName,
+                assetName,
+                asset => InvokeSafely(completed),
+                failed,
+                cachePolicy);
+        }
+
+        public GameObject Instantiate(
+            string bundleName,
+            string assetName,
+            Transform parent = null,
+            bool worldPositionStays = false,
+            AssetCachePolicy? cachePolicy = null)
+        {
+            AssetHandle<GameObject> prefabHandle = LoadAssetHandle<GameObject>(
+                bundleName,
+                assetName,
+                cachePolicy);
+            if (prefabHandle == null || prefabHandle.Asset == null)
+            {
+                prefabHandle?.Dispose();
+                LogLoadFailure(bundleName, assetName, typeof(GameObject));
+                return null;
+            }
+
+            try
+            {
+                GameObject instance = CreateInstance(
+                    prefabHandle.Asset,
+                    parent,
+                    worldPositionStays);
+                TrackInstance(new AssetInstanceHandle(instance, prefabHandle));
+                return instance;
+            }
+            catch (Exception exception)
+            {
+                prefabHandle.Dispose();
+                Debug.LogException(exception);
+                return null;
+            }
+        }
+
+        public void InstantiateAsync(
+            string bundleName,
+            string assetName,
+            Action<GameObject> completed,
+            Transform parent = null,
+            bool worldPositionStays = false,
+            AssetCachePolicy? cachePolicy = null,
+            Action failed = null)
+        {
+            if (completed == null)
+            {
+                Debug.LogError("[AssetManager] 异步实例化必须提供完成回调");
+                return;
+            }
+
+            LoadAssetHandleAsync<GameObject>(
+                bundleName,
+                assetName,
+                prefabHandle =>
+                {
+                    if (prefabHandle == null || prefabHandle.Asset == null)
+                    {
+                        prefabHandle?.Dispose();
+                        LogLoadFailure(bundleName, assetName, typeof(GameObject));
+                        InvokeSafely(failed);
+                        return;
+                    }
+
+                    GameObject instance = null;
+                    try
+                    {
+                        instance = CreateInstance(
+                            prefabHandle.Asset,
+                            parent,
+                            worldPositionStays);
+                        TrackInstance(new AssetInstanceHandle(instance, prefabHandle));
+                        completed.Invoke(instance);
+                    }
+                    catch (Exception exception)
+                    {
+                        if (instance != null)
+                        {
+                            ReleaseInstance(instance);
+                        }
+                        else
+                        {
+                            prefabHandle.Dispose();
+                        }
+
+                        Debug.LogException(exception);
+                    }
+                },
+                cachePolicy);
+        }
+
+        public bool ReleaseAsset(Object asset)
+        {
+            if (asset == null)
+            {
+                return false;
+            }
+
+            int instanceId = asset.GetInstanceID();
+            if (!_ownedAssetHandles.TryGetValue(
+                    instanceId,
+                    out List<IAssetHandle> handles)
+                || handles.Count == 0)
+            {
+                return false;
+            }
+
+            int lastIndex = handles.Count - 1;
+            IAssetHandle handle = handles[lastIndex];
+            handles.RemoveAt(lastIndex);
+            if (handles.Count == 0)
+            {
+                _ownedAssetHandles.Remove(instanceId);
+            }
+
+            handle.Dispose();
+            return true;
+        }
+
+        public bool ReleaseAsset<T>(string bundleName, string assetName)
+            where T : Object
+        {
+            string key = CreateAssetKey(
+                NormalizeBundleName(bundleName),
+                assetName?.Trim() ?? string.Empty,
+                typeof(T));
+            return _assets.TryGetValue(key, out AssetEntry entry)
+                   && entry.Asset != null
+                   && ReleaseAsset(entry.Asset);
+        }
+
+        public bool ReleaseInstance(
+            GameObject instance,
+            bool destroyInstance = true)
+        {
+            if (instance == null)
+            {
+                return false;
+            }
+
+            int instanceId = instance.GetInstanceID();
+            if (!_ownedInstanceHandles.TryGetValue(
+                    instanceId,
+                    out AssetInstanceHandle handle))
+            {
+                return false;
+            }
+
+            _ownedInstanceHandles.Remove(instanceId);
+            AssetInstanceTracker tracker = instance.GetComponent<AssetInstanceTracker>();
+            tracker?.Detach();
+            handle.Release(destroyInstance);
+            return true;
+        }
+
+        internal AssetHandle<T> LoadAssetHandle<T>(
             string bundleName,
             string assetName,
             AssetCachePolicy? cachePolicy = null)
@@ -193,7 +430,7 @@ namespace Sheng.GameFramework.Assets
             return CreateHandle<T>(entry);
         }
 
-        public void LoadAssetAsync<T>(
+        internal void LoadAssetHandleAsync<T>(
             string bundleName,
             string assetName,
             Action<AssetHandle<T>> completed,
@@ -246,48 +483,6 @@ namespace Sheng.GameFramework.Assets
             _pendingLoads.Add(key, newLoad);
             _loadQueue.Enqueue(newLoad);
             TryStartPendingLoads();
-        }
-
-        public void InstantiateAsync(
-            string bundleName,
-            string assetName,
-            Action<AssetInstanceHandle> completed,
-            Transform parent = null,
-            bool worldPositionStays = false,
-            AssetCachePolicy? cachePolicy = null)
-        {
-            if (completed == null)
-            {
-                Debug.LogError("[AssetManager] 异步实例化必须提供完成回调");
-                return;
-            }
-
-            LoadAssetAsync<GameObject>(
-                bundleName,
-                assetName,
-                prefabHandle =>
-                {
-                    if (prefabHandle == null || prefabHandle.Asset == null)
-                    {
-                        prefabHandle?.Dispose();
-                        InvokeSafely(completed, null);
-                        return;
-                    }
-
-                    GameObject instance = parent == null
-                        ? Instantiate(prefabHandle.Asset)
-                        : Instantiate(prefabHandle.Asset, parent, worldPositionStays);
-                    instance.name = prefabHandle.Asset.name;
-                    DeliverInstanceHandle(
-                        completed,
-                        new AssetInstanceHandle(instance, prefabHandle));
-                },
-                cachePolicy);
-        }
-
-        public void Release(IAssetHandle handle)
-        {
-            handle?.Dispose();
         }
 
         public int GetAssetReferenceCount<T>(string bundleName, string assetName)
@@ -404,6 +599,7 @@ namespace Sheng.GameFramework.Assets
             _isUnloading = true;
             _generation++;
             CancelPendingLoads();
+            ReleaseOwnedReferences();
             _assets.Clear();
             _bundleReferenceCounts.Clear();
             _activeLoadCount = 0;
@@ -476,6 +672,19 @@ namespace Sheng.GameFramework.Assets
             {
                 RemoveEntry(entryKey);
             }
+        }
+
+        internal void NotifyInstanceDestroyed(int instanceId)
+        {
+            if (!_ownedInstanceHandles.TryGetValue(
+                    instanceId,
+                    out AssetInstanceHandle handle))
+            {
+                return;
+            }
+
+            _ownedInstanceHandles.Remove(instanceId);
+            handle.Release(false);
         }
 
         public static AssetLoadMode ResolveLoadMode(AssetLoadMode requestedMode)
@@ -610,6 +819,105 @@ namespace Sheng.GameFramework.Assets
                 entry.Asset as T);
         }
 
+        private static GameObject CreateInstance(
+            GameObject prefab,
+            Transform parent,
+            bool worldPositionStays)
+        {
+            GameObject instance = parent == null
+                ? Object.Instantiate(prefab)
+                : Object.Instantiate(prefab, parent, worldPositionStays);
+            instance.name = prefab.name;
+            return instance;
+        }
+
+        private void TrackAssetHandle(Object asset, IAssetHandle handle)
+        {
+            int instanceId = asset.GetInstanceID();
+            if (!_ownedAssetHandles.TryGetValue(
+                    instanceId,
+                    out List<IAssetHandle> handles))
+            {
+                handles = new List<IAssetHandle>();
+                _ownedAssetHandles.Add(instanceId, handles);
+            }
+
+            handles.Add(handle);
+        }
+
+        private void ReleaseTrackedAssetHandle(Object asset, IAssetHandle handle)
+        {
+            if (asset != null
+                && _ownedAssetHandles.TryGetValue(
+                    asset.GetInstanceID(),
+                    out List<IAssetHandle> handles))
+            {
+                handles.Remove(handle);
+                if (handles.Count == 0)
+                {
+                    _ownedAssetHandles.Remove(asset.GetInstanceID());
+                }
+            }
+
+            handle?.Dispose();
+        }
+
+        private void TrackInstance(AssetInstanceHandle handle)
+        {
+            GameObject instance = handle.Instance;
+            int instanceId = instance.GetInstanceID();
+            _ownedInstanceHandles.Add(instanceId, handle);
+
+            AssetInstanceTracker tracker =
+                instance.GetComponent<AssetInstanceTracker>();
+            if (tracker == null)
+            {
+                tracker = instance.AddComponent<AssetInstanceTracker>();
+            }
+
+            tracker.hideFlags |= HideFlags.HideInInspector;
+            tracker.Initialize(this, instanceId);
+        }
+
+        private void ReleaseOwnedReferences()
+        {
+            AssetInstanceHandle[] instanceHandles =
+                new AssetInstanceHandle[_ownedInstanceHandles.Count];
+            _ownedInstanceHandles.Values.CopyTo(instanceHandles, 0);
+            _ownedInstanceHandles.Clear();
+            for (int i = 0; i < instanceHandles.Length; i++)
+            {
+                GameObject instance = instanceHandles[i].Instance;
+                if (instance != null)
+                {
+                    instance.GetComponent<AssetInstanceTracker>()?.Detach();
+                }
+
+                instanceHandles[i].Release(false);
+            }
+
+            List<IAssetHandle> assetHandles = new List<IAssetHandle>();
+            foreach (List<IAssetHandle> handles in _ownedAssetHandles.Values)
+            {
+                assetHandles.AddRange(handles);
+            }
+
+            _ownedAssetHandles.Clear();
+            for (int i = 0; i < assetHandles.Count; i++)
+            {
+                assetHandles[i].Dispose();
+            }
+        }
+
+        private static void LogLoadFailure(
+            string bundleName,
+            string assetName,
+            Type assetType)
+        {
+            Debug.LogError(
+                $"[AssetManager] 加载失败 {bundleName}/{assetName} 类型 {assetType?.Name}");
+        }
+
         private void RemoveEntry(string key)
         {
             if (!_assets.TryGetValue(key, out AssetEntry entry))
@@ -738,21 +1046,6 @@ namespace Sheng.GameFramework.Assets
             Action<AssetHandle<T>> completed,
             AssetHandle<T> handle)
             where T : Object
-        {
-            try
-            {
-                completed.Invoke(handle);
-            }
-            catch (Exception exception)
-            {
-                handle?.Dispose();
-                Debug.LogException(exception);
-            }
-        }
-
-        private static void DeliverInstanceHandle(
-            Action<AssetInstanceHandle> completed,
-            AssetInstanceHandle handle)
         {
             try
             {

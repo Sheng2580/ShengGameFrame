@@ -129,7 +129,7 @@ PoolKey explosionPool = PoolManager.Instance.InitializePoolAsync(
 
 相同 Key、资源和配置的并发初始化会合并，全部调用方会收到结果。相同 Key 使用不同资源或配置会失败
 
-资源池在整个注册期间持有一个 `AssetHandle<GameObject>`：
+资源池在整个注册期间持有一次预制体资源引用：
 
 ```text
 InitializePoolAsync -> Asset 引用 +1
@@ -297,7 +297,7 @@ PoolManagerDebugSnapshot snapshot =
 | `PrewarmPool` / `PrewarmPoolAsync` | 为已就绪池增加空闲对象 |
 | `SetMaxCapacity` | 动态调整最大容量 |
 | `ClearPool` / `ClearAllPools` | 销毁空闲对象并保留注册 |
-| `DeletePool` / `DeleteAllPools` | 删除池并释放资源句柄 |
+| `DeletePool` / `DeleteAllPools` | 删除池并释放资源引用 |
 | `DeleteScenePools` | 删除指定场景拥有的场景池 |
 | `DeletePersistentPools` | 删除全部常驻池 |
 | `GetDebugSnapshot` | 获取运行状态 |

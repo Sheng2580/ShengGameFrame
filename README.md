@@ -57,7 +57,7 @@ flowchart LR
 | [安装与快速开始](Docs/Getting_Started.md) | 安装、依赖、程序集引用和首次验证 |
 | [单例模块](Docs/Singletons.md) | 三种单例的选择与生命周期 |
 | [EventManager](Docs/EventManager.md) | GameEvent、监听、触发、清理和旧接口迁移 |
-| [AssetManager 模块](Docs/AssetManager.md) | 资源句柄、引用计数、缓存、限流与卸载 |
+| [AssetManager 模块](Docs/AssetManager.md) | 简单资源接口、引用计数、缓存、限流与卸载 |
 | [PoolManager 模块](Docs/PoolManager.md) | 泛型池、预热、复用、容量、删池与场景生命周期 |
 | [UI 模块](Docs/UI_System.md) | 面板声明、分层、模态和安全区 |
 | [状态机模块](Docs/StateMachine.md) | 状态定义、切换和逻辑帧驱动 |

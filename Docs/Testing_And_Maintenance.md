@@ -4,11 +4,11 @@
 
 ## 当前自动化测试
 
-框架当前包含 69 项 EditMode 测试：
+框架当前包含 73 项 EditMode 测试：
 
 | 测试组 | 数量 | 覆盖内容 |
 | --- | ---: | --- |
-| `AssetManagerTests` | 6 | Editor 直读、真实 AB、引用释放、缓存策略、配置和路径安全 |
+| `AssetManagerTests` | 10 | 简单加载、预加载、实例释放、失败回调、真实 AB、缓存策略和路径安全 |
 | `ObjectPoolTests` | 10 | 预热、LIFO 复用、容量、归还检查、缩容、清理和租约 |
 | `PoolManagerTests` | 13 | 预制体池、回调、容量、租用版本、删池、场景生命周期和 AssetManager 引用 |
 | `StateMachineTests` | 4 | 生命周期、强制切换、延迟请求、释放 |
@@ -56,7 +56,7 @@ unity-agent-cli --project <Unity项目路径> \
 | --- | --- |
 | Core | 编译、进入和退出 Play Mode、关闭 Domain Reload 后重复运行 |
 | AssetManager | Editor 直读、真实 AB、引用计数、依赖释放、限流和卸载 |
-| PoolManager | 泛型池、容量边界、重复归还、场景池、常驻池和资源句柄释放 |
+| PoolManager | 泛型池、容量边界、重复归还、场景池、常驻池和资源引用释放 |
 | UI | Resources 与 AB 面板、层级、遮罩、安全区、关闭缓存 |
 | StateMachine | 全部状态机测试，新增切换规则对应测试 |
 | BehaviorTree | 全部行为树测试，自定义节点的 Running 和 Abort 路径 |
