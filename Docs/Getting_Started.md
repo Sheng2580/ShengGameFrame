@@ -123,7 +123,7 @@ Sheng Game Framework > Framework > 检查更新
 
 ## 运行时初始化
 
-`AssetManager`、`PoolManager`、`TimerManager` 和 `UIManager` 都是跨场景单例。首次访问 `Instance` 时会查找已有对象，找不到则自动创建，因此基础用法不要求在启动场景预放管理器
+`AssetManager`、`PoolManager`、`TimerManager`、`SceneManager` 和 `UIManager` 都是跨场景单例。首次访问 `Instance` 时会查找已有对象，找不到则自动创建，因此基础用法不要求在启动场景预放管理器
 
 ```csharp
 using Sheng.GameFramework.Assets;
@@ -151,6 +151,7 @@ AssetManager.Instance.InitializeAsync(success =>
 - 使用普通服务或 Unity 管理器：[单例模块](Singletons.md)
 - 使用类型安全的全局事件：[EventManager](EventManager.md)
 - 安排延迟和循环任务：[TimerManager](TimerManager.md)
+- 异步切换和叠加场景：[SceneManager](SceneManager.md)
 - 构建并加载资源：[AssetManager 模块](AssetManager.md)
 - 初始化并复用对象：[PoolManager 模块](PoolManager.md)
 - 打开第一个面板：[UI 模块](UI_System.md)
